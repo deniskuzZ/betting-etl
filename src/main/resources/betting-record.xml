@@ -1,0 +1,34 @@
+<beanio xmlns="http://www.beanio.org/2012/03">
+
+    <stream name="betting-records" format="csv">
+        <parser>
+            <property name="delimiter" value=","/>
+            <property name="whitespaceAllowed" value="true"/>
+        </parser>
+
+        <record name="betting-record" class="com.betfair.domain.BettingRecord">
+            <field name="betId" type="String" trim="true"/>
+            <field name="betTimeStamp" type="Long" trim="true"/>
+            <field name="selectionId" type="Long" trim="true"/>
+            <field name="selectionName" type="String" trim="true"/>
+            <field name="stake" type="Double" trim="true"/>
+            <field name="price" type="Double" trim="true"/>
+            <field name="currency" type="com.betfair.domain.Currency" trim="true"/>
+        </record>
+    </stream>
+
+    <stream name="betting-report-records" format="csv">
+        <parser>
+            <property name="delimiter" value=","/>
+        </parser>
+
+        <record name="betting-report-record" class="com.betfair.domain.ReportRecord">
+            <field name="selectionName" type="String"/>
+            <field name="currency" type="com.betfair.domain.Currency" trim="true"/>
+            <field name="betsNumber" type="Long"/>
+
+            <field name="totalStakesWithCurrency" type="String"/>
+            <field name="totalPayoutWithCurrency" type="String"/>
+        </record>
+    </stream>
+</beanio>
