@@ -12,6 +12,9 @@ import org.springframework.stereotype.Service;
 
 import java.io.*;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ForkJoinPool;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -24,20 +27,24 @@ public class CSVRecordsConsumer implements RecordsConsumer {
     @Autowired
     private StreamFactory factory;
 
-
-    public Map<Tuple2<String, Currency>, Tuple3<Long, Double, Double>> apply(Function<Stream<BettingRecord>, Map<Tuple2<String, Currency>, Tuple3<Long, Double, Double>>> function) throws IOException {
+    public Map<Tuple2<String, Currency>, Tuple3<Long, Double, Double>> apply(Function<Stream<BettingRecord>, Callable<Map<Tuple2<String, Currency>, Tuple3<Long, Double, Double>>>> function) throws IOException, ExecutionException, InterruptedException {
         BeanReader in = factory.createReader("betting-records",
                 new File("/Users/kuzmende/projects/betting-etl/input.csv"));
 
-        Unmarshaller marshaller = factory.createUnmarshaller("betting-records");
         File inputF = new File("/Users/kuzmende/projects/betting-etl/input.csv");
 
+        Callable<Map<Tuple2<String, Currency>, Tuple3<Long, Double, Double>>> task;
         Map<Tuple2<String, Currency>, Tuple3<Long, Double, Double>> result;
+
         InputStream inputFS = new FileInputStream(inputF);
 
         try (BufferedReader br = new BufferedReader(new InputStreamReader(inputFS))) {
-            result = function.apply(
-                    br.lines().skip(1).map(t -> (BettingRecord) marshaller.unmarshal(t)));
+            task = function.apply(
+                    br.lines().skip(1).parallel().map(t -> (BettingRecord)
+                            factory.createUnmarshaller("betting-records").unmarshal(t)));
+
+            ForkJoinPool forkJoinPool = new ForkJoinPool(4);
+            result = forkJoinPool.submit(task).get();
         }
         return result;
     }

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Created by kuzmende on 11/2/17.
@@ -29,7 +30,7 @@ public class ETLFlow {
     @Autowired
     private RecordsCombiner combiner;
 
-    public void execute() throws IOException {
+    public void execute() throws IOException, ExecutionException, InterruptedException {
         List<ReportRecord> reportRecords = combiner.sort(consumer.apply(aggregator));
         producer.accept(reportRecords);
     }
