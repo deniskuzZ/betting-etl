@@ -1,46 +1,45 @@
 package com.betfair.adapters;
 
-import com.betfair.domain.BettingRecord;
-import com.betfair.domain.Currency;
-import org.beanio.BeanReader;
 import org.beanio.StreamFactory;
 import org.beanio.Unmarshaller;
-import org.jooq.lambda.tuple.Tuple2;
-import org.jooq.lambda.tuple.Tuple3;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
-import java.io.*;
-import java.util.Map;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
-import java.util.function.Function;
-import java.util.stream.Stream;
+import java.util.stream.Collector;
 
 /**
  * Created by kuzmende on 10/31/17.
  */
-@Service
-public class CSVRecordsConsumer implements RecordsConsumer {
+public class CSVRecordsConsumer<T> implements RecordsConsumer<T> {
 
-    @Autowired
-    private StreamFactory factory;
+    private StreamFactory streamFactory;
+    private String objectMapping;
+
+    private InputStream inputStream;
+
+    public CSVRecordsConsumer(InputStream inputStream, StreamFactory factory, String objectMapping) {
+        this.inputStream = inputStream;
+
+        this.streamFactory = factory;
+        this.objectMapping = objectMapping;
+    }
 
     private ThreadLocal<Unmarshaller> unmarshaller = ThreadLocal.withInitial(
-            () -> factory.createUnmarshaller("betting-records"));
+            () -> streamFactory.createUnmarshaller(objectMapping));
 
-    public Map<Tuple2<String, Currency>, Tuple3<Long, Double, Double>> apply(Function<Stream<BettingRecord>, Callable<Map<Tuple2<String, Currency>, Tuple3<Long, Double, Double>>>> function) throws IOException, ExecutionException, InterruptedException {
-        File inputF = new File("/Users/kuzmende/projects/betting-etl/input.csv");
-        InputStream inputFS = new FileInputStream(inputF);
+    @SuppressWarnings("unchecked")
+    public <R, A> R collect(Collector<? super T, A, R> collector) throws IOException, ExecutionException, InterruptedException {
+        R result;
 
-        Callable<Map<Tuple2<String, Currency>, Tuple3<Long, Double, Double>>> task;
-        Map<Tuple2<String, Currency>, Tuple3<Long, Double, Double>> result;
-
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(inputFS))) {
-            task = function.apply(
-                    br.lines().skip(1).parallel().map(t -> (BettingRecord)
-                            unmarshaller.get().unmarshal(t)));
+        try (InputStreamReader is = new InputStreamReader(inputStream); BufferedReader br = new BufferedReader(is)) {
+            Callable<R> task = () -> br.lines().skip(1).parallel()
+                    .map(t -> (T) unmarshaller.get().unmarshal(t))
+                    .collect(collector);
 
             ForkJoinPool forkJoinPool = new ForkJoinPool(4);
             result = forkJoinPool.submit(task).get();

@@ -26,9 +26,8 @@
             <field name="selectionName" type="String"/>
             <field name="currency" type="com.betfair.domain.Currency" trim="true"/>
             <field name="betsNumber" type="Long"/>
-
-            <field name="totalStakesWithCurrency" type="String"/>
-            <field name="totalPayoutWithCurrency" type="String"/>
+            <field name="totalStakes" type="String"/>
+            <field name="totalPayout" type="String"/>
         </record>
     </stream>
 </beanio>

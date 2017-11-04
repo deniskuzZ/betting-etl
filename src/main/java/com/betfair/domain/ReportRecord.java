@@ -1,42 +1,38 @@
 package com.betfair.domain;
 
 import lombok.Getter;
-import lombok.Setter;
 
-import java.text.DecimalFormat;
+import static com.betfair.utils.CurrencyUtil.formatWithCurrency;
+import static com.betfair.utils.CurrencyUtil.toEUR;
 
 /**
  * Created by kuzmende on 10/31/17.
  */
 @Getter
-@Setter
 public class ReportRecord {
 
     private String selectionName;
     private Currency currency;
-    private Long betsNumber;
-    private Double totalStakes;
-    private Double totalPayout;
 
+    private Long betsNumber;
     private Double totalPayoutInEur;
 
-    private String totalStakesWithCurrency;
-    private String totalPayoutWithCurrency;
+    private String totalStakes;
+    private String totalPayout;
 
-    public ReportRecord(String selectionName, Currency currency, Long betsNumber, Double totalStakes, Double totalPayout) {
-        this.selectionName = selectionName;
-        this.currency = currency;
-        this.betsNumber = betsNumber;
-        this.totalStakes = totalStakes;
-        this.totalPayout = totalPayout;
+    public ReportRecord(RecordsAggregationKey aggregationKey, RecordsAggregationResult aggregationResult) {
+        this.selectionName = aggregationKey.getSelectionName();
+        this.currency = aggregationKey.getCurrency();
 
-        totalPayoutInEur = Currency.GBP == currency ? totalPayout * 1.14 : totalPayout;
+        this.betsNumber = aggregationResult.getBetsNumber();
 
-        totalStakesWithCurrency = formatWithCurrency(totalStakes);
-        totalPayoutWithCurrency = formatWithCurrency(totalPayout);
-    }
+        this.totalStakes = formatWithCurrency(
+                aggregationResult.getTotalStakes(), currency);
 
-    private String formatWithCurrency(Double value) {
-        return new DecimalFormat(currency.getSign()+"#.00").format(value);
+        this.totalPayout = formatWithCurrency(
+                aggregationResult.getTotalPayout(), currency);
+
+        this.totalPayoutInEur = toEUR(
+                aggregationResult.getTotalPayout(), currency);
     }
 }

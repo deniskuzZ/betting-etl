@@ -1,13 +1,11 @@
 package com.betfair.adapters;
 
-import com.betfair.domain.ReportRecord;
-
 import java.util.List;
 
 /**
  * Created by kuzmende on 11/2/17.
  */
-public interface ReportProducer {
+public interface ReportProducer<T> {
 
-    void accept(List<ReportRecord> records);
+    void submit(List<T> data);
 }

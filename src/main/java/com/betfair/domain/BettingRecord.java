@@ -7,7 +7,6 @@ import lombok.Setter;
 /**
  * Created by kuzmende on 10/31/17.
  */
-
 @Getter
 @Setter
 @NoArgsConstructor
@@ -21,8 +20,7 @@ public class BettingRecord {
     private Double price;
     private Currency currency;
 
-    public Double getBetPayout(){
-        return stake*price;
+    public Double getBetPayout() {
+        return stake * price;
     }
-
 }
