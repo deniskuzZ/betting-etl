@@ -17,13 +17,20 @@ import java.util.stream.Collector;
  */
 public class CSVRecordsConsumer<T> implements RecordsConsumer<T> {
 
+    private static final String CONSUMER_PARALLELISM = "consumer.ForkJoinPool.parallelism";
+    private static final String DEFAULT_PARALLELISM = "4";
+
     private StreamFactory streamFactory;
     private String objectMapping;
 
-    private InputStream inputStream;
+    private final InputStream inputStream;
+    private final int parallelism;
 
     public CSVRecordsConsumer(InputStream inputStream, StreamFactory factory, String objectMapping) {
         this.inputStream = inputStream;
+
+        this.parallelism = Integer.valueOf(
+                System.getProperty(CONSUMER_PARALLELISM, DEFAULT_PARALLELISM));
 
         this.streamFactory = factory;
         this.objectMapping = objectMapping;
@@ -34,16 +41,13 @@ public class CSVRecordsConsumer<T> implements RecordsConsumer<T> {
 
     @SuppressWarnings("unchecked")
     public <R, A> R collect(Collector<? super T, A, R> collector) throws IOException, ExecutionException, InterruptedException {
-        R result;
+        BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
 
-        try (InputStreamReader is = new InputStreamReader(inputStream); BufferedReader br = new BufferedReader(is)) {
-            Callable<R> task = () -> br.lines().skip(1).parallel()
-                    .map(t -> (T) unmarshaller.get().unmarshal(t))
-                    .collect(collector);
+        Callable<R> task = () -> br.lines().skip(1).parallel()
+                .map(t -> (T) unmarshaller.get().unmarshal(t))
+                .collect(collector);
 
-            ForkJoinPool forkJoinPool = new ForkJoinPool(4);
-            result = forkJoinPool.submit(task).get();
-        }
-        return result;
+        ForkJoinPool forkJoinPool = new ForkJoinPool(parallelism);
+        return forkJoinPool.submit(task).get();
     }
 }

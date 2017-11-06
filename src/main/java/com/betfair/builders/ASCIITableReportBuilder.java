@@ -13,27 +13,28 @@ import java.util.List;
  */
 public class ASCIITableReportBuilder<T> {
 
-    private static final Object[] REPORT_HEADERS =
-            {"Selection Name", "Currency", "No Of Bets", "Total Stakes", "Total Payout"};
+    private final StreamFactory streamFactory;
+    private final String objectMapping;
 
-    private StreamFactory streamFactory;
-    private String objectMapping;
+    private final Object[] reportHeaders;
 
-    public ASCIITableReportBuilder(StreamFactory factory, String objectMapping) {
+    public ASCIITableReportBuilder(StreamFactory factory, String objectMapping, Object[] reportHeaders) {
         this.streamFactory = factory;
         this.objectMapping = objectMapping;
+
+        this.reportHeaders = reportHeaders;
     }
 
-    public String create(List<T> postsPerTypeAndAuthor) {
+    public String create(List<T> reportRecords) {
         AsciiTable at = new AsciiTable();
 
         at.setTextAlignment(TextAlignment.LEFT);
         at.getRenderer().setCWC(new CWC_LongestLine());
 
-        at.addRule(); at.addRow(REPORT_HEADERS); at.addRule();
+        at.addRule(); at.addRow(reportHeaders); at.addRule();
         Marshaller marshaller = streamFactory.createMarshaller(objectMapping);
 
-        postsPerTypeAndAuthor.forEach(it->{
+        reportRecords.forEach(it->{
             at.addRow((Object[]) marshaller.marshal(it).toString().split(","));
             at.addRule();
         });

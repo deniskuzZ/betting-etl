@@ -23,9 +23,8 @@ import java.util.stream.Collectors;
 @Service
 public class ETLFlow {
 
-    private ReportProducer<ReportRecord> producer;
-
-    private RecordsConsumer<BettingRecord> consumer;
+    private final ReportProducer<ReportRecord> producer;
+    private final RecordsConsumer<BettingRecord> consumer;
 
     @Autowired
     public ETLFlow(RecordsConsumer<BettingRecord> consumer, ReportProducer<ReportRecord> producer) {

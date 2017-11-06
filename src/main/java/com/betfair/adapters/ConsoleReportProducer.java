@@ -9,7 +9,7 @@ import java.util.List;
  */
 public class ConsoleReportProducer<T> implements ReportProducer<T> {
 
-    private ASCIITableReportBuilder<T> reportBuilder;
+    private final ASCIITableReportBuilder<T> reportBuilder;
 
     public ConsoleReportProducer(ASCIITableReportBuilder<T> reportBuilder) {
         this.reportBuilder = reportBuilder;

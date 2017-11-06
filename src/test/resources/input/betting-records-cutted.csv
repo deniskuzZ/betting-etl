@@ -1,0 +1,3 @@
+betId, betTimestamp, selectionId, selectionName, stake, price, currency
+Bet-10, 1489490156000, 1, Selection-1, 0.5, 6.0, GBP
+Bet-11, 1489490156000, 2, Selection-2, 1.25, 4.0, EUR

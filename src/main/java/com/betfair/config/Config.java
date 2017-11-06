@@ -11,11 +11,13 @@ import org.beanio.StreamFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.Resource;
 
 import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -24,20 +26,25 @@ import java.util.Map;
 @Configuration
 public class Config {
 
-    @Value("${filePath}")
-    private String filePath;
+    public static final String BETTING_RECORDS = "betting-records";
+    public static final String BETTING_REPORT_RECORDS = "betting-report-records";
+
+    public static final Object[] REPORT_HEADERS =
+            {"Selection Name", "Currency", "No Of Bets", "Total Stakes", "Total Payout"};
+
+    @Value("${inputPath}")
+    private File inputPath;
 
     @Value("classpath:betting-record.xml")
-    private File beanioConfig;
+    private Resource beanioConfig;
 
     @Value("#{${exchrate_to_EUR}}")
     private Map<String, Double> exchrate_to_EUR;
 
-
     @Bean
-    public StreamFactory streamFactory(){
+    public StreamFactory streamFactory() throws IOException {
         StreamFactory factory = StreamFactory.newInstance();
-        factory.load(beanioConfig);
+        factory.load(beanioConfig.getInputStream());
 
         return factory;
     }
@@ -45,20 +52,21 @@ public class Config {
     @Bean
     public RecordsConsumer<BettingRecord> csvRecordsConsumer(StreamFactory streamFactory) throws FileNotFoundException {
         RecordsConsumer<BettingRecord> csvRecordRecordsConsumer = new CSVRecordsConsumer<>(
-                new FileInputStream(filePath),
+                new FileInputStream(inputPath),
                 streamFactory,
-                "betting-records"
+                BETTING_RECORDS
         );
         return csvRecordRecordsConsumer;
     }
 
     @Bean
-    public ASCIITableReportBuilder<ReportRecord> consoleReportBuilder(StreamFactory streamFactory){
-        ASCIITableReportBuilder<ReportRecord> consoleReportBuilder = new ASCIITableReportBuilder<>(
+    public ASCIITableReportBuilder<ReportRecord> asciiTableReportBuilder(StreamFactory streamFactory){
+        ASCIITableReportBuilder<ReportRecord> asciiTableReportBuilder = new ASCIITableReportBuilder<>(
                 streamFactory,
-                "betting-report-records"
+                BETTING_REPORT_RECORDS,
+                REPORT_HEADERS
         );
-        return consoleReportBuilder;
+        return asciiTableReportBuilder;
     }
 
     @Bean

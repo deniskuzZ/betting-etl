@@ -1,5 +1,6 @@
 package com.betfair.domain;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 import static com.betfair.utils.CurrencyUtil.formatWithCurrency;
@@ -9,6 +10,7 @@ import static com.betfair.utils.CurrencyUtil.toEUR;
  * Created by kuzmende on 10/31/17.
  */
 @Getter
+@EqualsAndHashCode
 public class ReportRecord {
 
     private String selectionName;

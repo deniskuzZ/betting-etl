@@ -10,7 +10,7 @@ import java.util.Map;
  */
 public final class CurrencyUtil {
 
-    private static final String DECIMAL_FORMAT = "0.00";
+    public static final String DECIMAL_FORMAT = "0.00";
 
     public static Map<String, Double> exchrate_to_EUR;
 
